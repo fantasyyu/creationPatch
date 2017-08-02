@@ -1,1 +1,2 @@
 python -m http.server --cgi 1234
+or just run httpdserver.py
