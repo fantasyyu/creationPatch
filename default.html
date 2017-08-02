@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>createSP</title>
+
+    <!-- WinJS references -->
+    <link href="WinJS/css/ui-light.css" rel="stylesheet" />
+    <script src="WinJS/js/base.js"></script>
+    <script src="WinJS/js/ui.js"></script>
+
+    <!-- createSP references -->
+    <link href="css/default.css" rel="stylesheet" />
+    <script src="js/jquery.js"></script>
+    <script src="js/createSP.js"></script>
+    
+    <script>
+        var xmlhttp;
+        var intId = 1;
+        function createXmlHttpRequest() {
+            var xmlhttp;
+            if (window.XMLHttpRequest) {
+                xmlhttp = new XMLHttpRequest();
+            } else if (window.ActiveXObject) {
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            return xmlhttp;
+        }
+
+        $(document).ready(function () {
+
+            $("#btnOpen").click(function () {
+                //得到选择的文件的路径及文件名
+                var path = $("#myfile").val();
+                alert(path)
+                //加载本地文件
+                $.get(path).success(function (content) {
+                    // content就为文件data.txt的文本内容了
+                    $("#divShow").html(content);
+                });
+            });
+
+            $("#btnAdd").click(function () {
+                var fieldWrapper = $("<div class=\"groupMSI\" method=\"get\" id=\"groupMSIform" + intId + "\" />");
+                var fLegend = $("<fieldset><legend>Group of base and upgrade build msi</legend>Base Image path: <input type=\"text\" class=\"cBaseImage\" id=\"txBaseImageDir"
+                    + intId + "\"/> Upgrade Image path: <input type=\"text\" class=\"cUpgradeImage\" id=\"txUpgradeImageDir"
+                    + intId + "\"/>" + " Changed File List: <textarea class=\"cChangedFile\" " + "id=\"txaChangeFile" + intId 
+                    + "\" placeholder=\"add changed file, if this is empty, all files wil be updated.\"></textarea>");
+                var removeButton = $("<input type=\"button\" class=\"remove\" value=\"remove\" /></fieldset>");
+                removeButton.click(function () {
+                    $(this).parent().remove();
+                });   
+                fieldWrapper.append(fLegend);
+                fieldWrapper.append(removeButton);
+                $("#groupMSIform0").append(fieldWrapper);
+                intId = intId + 1;
+            });
+
+        });
+
+        function startCreate() {
+            var xmlhttp = createXmlHttpRequest()
+            
+            var bStartCreateSP = confirm("Please confirm your configuration,Start to create SP?");
+            //alert(bStartCreateSP)
+            if (bStartCreateSP==false)
+                return;
+            intId = 1;
+            var SPversion = $("#SPVersion").val();
+            var txEmail = $("#txEmail").val();
+            var patchType = $('input[name=PatchType]:checked').val()
+            if (txEmail.indexOf("@autodesk.com") < 0) {
+                alert("Please make sure your email is correct");
+                return;
+            }
+
+            var sendData = JSON.stringify({ "SPversion": SPversion, "Email": txEmail, "PatchType": patchType, "MsiGroupList": GetGroupMsiData() });
+            console.log("data: " + sendData);
+            $.ajax({
+                url: "/cgi-bin/test.py",
+                type: "POST",
+                //contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ "SPversion": SPversion, "Email": txEmail, "PatchType": patchType, "MsiGroupList": GetGroupMsiData() }),
+                dataType: "json",
+                success: function (response) {
+                    //alert(response);
+                    console.log(response);
+                    console.log(response.responseText);
+                },
+                error: function (data) {
+                    //alert(data.responseText);
+                    console.log(data);
+                    console.log(data.responseText);
+                }
+            });
+			location.reload();
+        }
+
+    </script>
+</head>
+<body class="win-type-body" id="main" style="overflow-x:auto;overflow-y:auto">
+    <h3>Creation of Patch</h3>
+
+    <!--<p>Base Image Path</p>
+    <input type="text" id="txBaseImageDir" />
+    <button id="btBaseImageDir" hidden="hidden">Browse</button>
+    <p>Upgrade Image Path</p>
+    <input type="text" id="txUpgradeImageDir" />
+    <button type="button" id="btUpgradeImageDir" onclick="BrowseFolder()" hidden="hidden">Browse</button>
+    <p>Changed File List</p>
+    <textarea class="text" id="txaChangeFile" name="txaChangeFile" placeholder="add changed file, if this is empty, all files wil be updated."></textarea>-->
+    <div id="groupMSIform0" class="groupMSI" method="get" style="width:1050px;">
+        <fieldset>
+            <legend>Core Group of base and upgrade build msi</legend>
+            Base Image path: <input type="text" class="cBaseImage" id="txBaseImageDir0" />
+            Upgrade Image path: <input type="text" class="cUpgradeImage" id="txUpgradeImageDir0" />
+            Changed File List: <textarea class="cChangedFile" id="txaChangeFile0" name="txaChangeFile0" placeholder="add changed file, if this is empty, all files wil be updated."></textarea>
+        </fieldset>
+    </div>
+    <input type="button" id="btnAdd" value="Add" />
+
+    <p>Patch version</p>
+    <input id="SPVersion" list="Version" contenteditable="false"/>
+    <p></p>
+    <form id="radio_type" name="patch_type">
+        <input type="radio" name="PatchType" value="ServicePack" checked>ServicePack
+        <input type="radio" name="PatchType" value="Hotfix">Hotfix
+        <input type="radio" name="PatchType" value="Update">Update
+    </form> 
+    <datalist id="Version" contenteditable="false">
+        <option value="1">
+        <option value="2">
+        <option value="3">
+    </datalist>
+    <!--<select id="SPVersion" name="SPVersion" >
+        <option value="empty"></option>
+        <option value="volvo">1</option>
+        <option value="saab">2</option>
+        <option value="opel">3</option>
+        <option value="audi">other</option>
+    </select>-->
+    <!--<p>target one more base image</p>
+    <input type="checkbox" id="chbAddBaseImage" title="targe one more base image" />
+    <p>Add more groups of base and Upgrade images</p>
+    <input type="checkbox" id="chbAddGroup" title="Add more base and Upgrade images" />-->
+    <p>Save Configuration</p>
+    <button type="button" id="btnSave" onclick="saveTextAsFile()" >Save</button>
+    <p></p>
+    <!--<input type="file" name="btnLoad" id="btnLoad" class="file" multiple title="load" onclick="loadConfigurationFile()" />-->
+    <fieldset style="width:300px;">
+        <h4>Load Configuration</h4>
+        <input type='file' id='fileinput'>
+        <input type='button' id='btnLoad' value='Load' onclick='loadFile();'>
+    </fieldset>
+
+    <p>Email</p>
+    <input type="text" id="txEmail" name="txEmail" placeholder="xxx@autodesk.com" />
+    <p></p>
+    <button type="button" id="btnStart" onclick="startCreate()">start</button>
+    <br />
+    <br />
+    <br />
+    <br />
+
+</body>
+</html>

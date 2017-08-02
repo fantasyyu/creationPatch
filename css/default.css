@@ -1,0 +1,11 @@
+﻿body { 
+}
+.text {
+	BORDER-BOTTOM: #0d7bd5 1px solid; BORDER-LEFT: #0d7bd5 1px solid; PADDING-BOTTOM: 10px; LINE-HEIGHT: 18px; MARGIN: 0px 0px 18px; PADDING-LEFT: 10px; WIDTH: 248px; PADDING-RIGHT: 10px; DISPLAY: inline-block; BACKGROUND: #e8f4fc; COLOR: #888; FONT-SIZE: 14px; BORDER-TOP: #0d7bd5 1px solid; CURSOR: text; BORDER-RIGHT: #0d7bd5 1px solid; PADDING-TOP: 10px; box-shadow: 0 1px 0 rgba(255, 255, 255, .3), 0 1px 3px rgba(0, 0, 0, .3) inset; background-clip: padding-box; border-radius: 5px
+}
+TEXTAREA.text {
+	HEIGHT: 200px
+}
+TEXTAREA.cChangedFile {
+	HEIGHT: 150px
+}
